@@ -2,84 +2,110 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-st.set_page_config(page_title="Control de Recibo de Luz", page_icon="⚡", layout="wide")
+# Configuración visual de la página
+st.set_page_config(page_title="Recibo de Luz Compartido", page_icon="⚡", layout="centered")
 
-st.title("⚡ Calculador Interactivo de Recibo de Luz")
-st.write("Ingresa los datos del recibo y las lecturas mensuales para calcular la división exacta.")
+# Estilos personalizados para que se vea limpio y moderno en el celular
+st.markdown("""
+    <style>
+    .main { background-color: #f8f9fa; }
+    .stNumberInput, .stDateInput { background-color: #ffffff; border-radius: 10px; }
+    div[data-testid="stMetricValue"] { font-size: 32px; font-weight: bold; color: #1e293b; }
+    .card-nora { background-color: #ffe6eb; padding: 20px; border-radius: 15px; border-left: 8px solid #ff4b72; margin-bottom: 15px; }
+    .card-jesus { background-color: #e6f0ff; padding: 20px; border-radius: 15px; border-left: 8px solid #1e88e5; margin-bottom: 15px; }
+    .card-total { background-color: #f1f5f9; padding: 15px; border-radius: 12px; border-left: 5px solid #64748b; }
+    h3 { margin-top: 0px !important; color: #0f172a; }
+    </style>
+""", unsafe_allow_html=True)
 
-# --- BARRA LATERAL: DATOS DEL RECIBO GENERAL ---
-st.sidebar.header("📋 1. Datos del Recibo General")
-monto_recibo = st.sidebar.number_input("Monto Total del Recibo (S/.)", min_value=0.0, value=94.0, step=0.10, format="%.2f")
-kwh_recibo = st.sidebar.number_input("Consumo Total del Recibo (kWh)", min_value=1.0, value=116.0, step=1.0)
+st.title("⚡ LuzNet - Control de Recibo")
+st.write("Selecciona el mes actual para ver cuánto le corresponde pagar a cada departamento de forma justa.")
 
-fecha_ini = st.sidebar.date_input("Fecha Inicio Recibo", value=datetime(2026, 9, 17))
-fecha_fin = st.sidebar.date_input("Fecha Fin Recibo", value=datetime(2026, 10, 17))
-
-# --- CUERPO PRINCIPAL: INGRESO DE LECTURAS DE NORA ---
-st.subheader("📸 2. Historial de Lecturas (Medidor de Nora)")
-st.write("Modifica o añade nuevas filas según vayas tomando las lecturas del medidor interno.")
-
-datos_iniciales = pd.DataFrame([
-    {"Fecha": datetime(2026, 8, 16).date(), "Lectura (kWh)": 0.0},
-    {"Fecha": datetime(2026, 9, 6).date(), "Lectura (kWh)": 36.4},
-    {"Fecha": datetime(2026, 9, 29).date(), "Lectura (kWh)": 81.3},
-    {"Fecha": datetime(2026, 10, 19).date(), "Lectura (kWh)": 124.4}
-])
-
-tabla_editable = st.data_editor(
-    datos_iniciales, 
-    num_rows="dynamic", 
-    use_container_width=True,
-    column_config={
-        "Fecha": st.column_config.DateColumn("Fecha de Lectura", format="DD/MM/YYYY", required=True),
-        "Lectura (kWh)": st.column_config.NumberColumn("Lectura del Medidor (kWh)", min_value=0.0, format="%.1f", required=True)
+# --- BASE DE DATOS LOCAL (Aquí agregas los datos reales cada mes) ---
+# Al guardarlos aquí, tus inquilinos solo tendrán que abrir la web y elegir el mes.
+historial_meses = {
+    "Octubre 2026": {
+        "monto_total": 94.00,
+        "kwh_total": 116.0,
+        "fecha_ini": "17/09/2026",
+        "fecha_fin": "17/10/2026",
+        "lecturas_nora": [
+            {"fecha": "16/08/2026", "lectura": 0.0},
+            {"fecha": "06/09/2026", "lectura": 36.4},
+            {"fecha": "29/09/2026", "lectura": 81.3},
+            {"fecha": "19/10/2026", "lectura": 124.4}
+        ]
     }
-)
+    # Cuando llegue noviembre, simplemente copias la estructura aquí abajo.
+}
 
-df_lecturas = pd.DataFrame(tabla_editable).dropna().sort_values(by="Fecha").reset_index(drop=True)
+# --- SELECCIÓN DE MES PARA LOS INQUILINOS ---
+mes_seleccionado = st.selectbox("📆 Selecciona el mes del recibo que deseas consultar:", list(historial_meses.keys()))
 
-if len(df_lecturas) >= 2:
-    tramos = []
-    for i in range(len(df_lecturas) - 1):
-        f1 = df_lecturas.loc[i, "Fecha"]
-        f2 = df_lecturas.loc[i+1, "Fecha"]
-        dias = (f2 - f1).days
-        kwh = df_lecturas.loc[i+1, "Lectura (kWh)"] - df_lecturas.loc[i, "Lectura (kWh)"]
-        promedio = kwh / dias if dias > 0 else 0
-        tramos.append({"inicio": f1, "fin": f2, "promedio": promedio, "dias": dias, "kwh": kwh})
+# Extraer datos del mes elegido
+datos = historial_meses[mes_seleccionado]
+monto_recibo = datos["monto_total"]
+kwh_recibo = datos["kwh_total"]
+fecha_ini = datetime.strptime(datos["fecha_ini"], "%d/%m/%Y")
+fecha_fin = datetime.strptime(datos["fecha_fin"], "%d/%m/%Y")
 
-    rango_recibo = pd.date_range(start=fecha_ini, end=fecha_fin)
-    kwh_nora_total = 0.0
+# Convertir lecturas de Nora a formato fecha
+tramos = []
+lecturas = datos["lecturas_nora"]
+for i in range(len(lecturas) - 1):
+    f1 = datetime.strptime(lecturas[i]["fecha"], "%d/%m/%Y").date()
+    f2 = datetime.strptime(lecturas[i+1]["fecha"], "%d/%m/%Y").date()
+    dias = (f2 - f1).days
+    kwh = lecturas[i+1]["lectura"] - lecturas[i]["lectura"]
+    promedio = kwh / dias if dias > 0 else 0
+    tramos.append({"inicio": f1, "fin": f2, "promedio": promedio})
 
-    for d in range(len(rango_recibo) - 1):
-        dia_actual = rango_recibo[d].date()
-        for tramo in tramos:
-            if tramo["inicio"] <= dia_actual < tramo["fin"]:
-                kwh_nora_total += tramo["promedio"]
-                break
+# Calcular consumo de Nora en el rango del recibo
+rango_recibo = pd.date_range(start=fecha_ini, end=fecha_fin)
+kwh_nora_total = 0.0
 
-    kwh_jesus_total = max(0.0, kwh_recibo - kwh_nora_total)
-    pct_nora = min(1.0, kwh_nora_total / kwh_recibo) if kwh_recibo > 0 else 0
-    pago_nora = monto_recibo * pct_nora
-    pago_jesus = monto_recibo * (1.0 - pct_nora)
+for d in range(len(rango_recibo) - 1):
+    dia_actual = rango_recibo[d].date()
+    for tramo in tramos:
+        if tramo["inicio"] <= dia_actual < tramo["fin"]:
+            kwh_nora_total += tramo["promedio"]
+            break
 
-    st.markdown("---")
-    st.subheader("💵 División de la Cuenta del Mes")
-    df_cuentas = pd.DataFrame({
-        "Persona / Departamento": ["👩‍🦰 Nora", "👨‍🦱 Jesús"],
-        "Consumo Estimado": [f"{kwh_nora_total:.2f} kWh", f"{kwh_jesus_total:.2f} kWh"],
-        "Porcentaje del Total": [f"{pct_nora*100:.2f}%", f"{(1.0 - pct_nora)*100:.2f}%"],
-        "Monto Justo a Pagar": [f"S/. {pago_nora:.2f}", f"S/. {pago_jesus:.2f}"]
-    })
-    st.dataframe(df_cuentas, hide_index=True, use_container_width=True)
+# Cálculos finales
+kwh_jesus_total = max(0.0, kwh_recibo - kwh_nora_total)
+pct_nora = min(1.0, kwh_nora_total / kwh_recibo) if kwh_recibo > 0 else 0
 
-    st.subheader("📊 Historial de Métricas de Gasto")
-    df_tramos = pd.DataFrame([{
-        "Período Evaluado": f"Del {t['inicio'].strftime('%d/%m/%Y')} al {t['fin'].strftime('%d/%m/%Y')}",
-        "Días del Tramo": t["dias"],
-        "Consumo en el Tramo": f"{t['kwh']:.1f} kWh",
-        "Ritmo de Gasto Diario": f"{t['promedio']:.2f} kWh/día"
-    } for t in tramos])
-    st.dataframe(df_tramos, hide_index=True, use_container_width=True)
-else:
-    st.info("💡 Por favor, ingresa al menos 2 filas en la tabla superior.")
+pago_nora = monto_recibo * pct_nora
+pago_jesus = monto_recibo * (1.0 - pct_nora)
+
+st.markdown("---")
+
+# --- DISEÑO DE TARJETAS VISUALES ---
+
+# Tarjeta de Nora (Color Rosado/Rojo)
+st.markdown(f"""
+    <div class="card-nora">
+        <h3>👩‍🦰 Departamento Sra. Nora</h3>
+        <p style='margin-bottom:5px; color:#475569;'>Consumo medido en el mes: <strong>{kwh_nora_total:.2f} kWh</strong> ({(pct_nora*100):.1f}%)</p>
+        <p style='margin-top:0px; font-size: 14px; color: #64748b;'>Calculado según promedio exacto de sus lecturas de medidor.</p>
+        <div style='font-size: 28px; font-weight: bold; color: #be123c;'>Monto a Pagar: S/. {pago_nora:.2f}</div>
+    </div>
+""", unsafe_allow_html=True)
+
+# Tarjeta de Jesús (Color Azul)
+st.markdown(f"""
+    <div class="card-jesus">
+        <h3>👨‍🦱 Departamento Jesús</h3>
+        <p style='margin-bottom:5px; color:#475569;'>Consumo (Diferencia del total): <strong>{kwh_jesus_total:.2f} kWh</strong> ({((1.0 - pct_nora)*100):.1f}%)</p>
+        <p style='margin-top:0px; font-size: 14px; color: #64748b;'>Calculado restando el medidor de Nora al medidor general.</p>
+        <div style='font-size: 28px; font-weight: bold; color: #1d4ed8;'>Monto a Pagar: S/. {pago_jesus:.2f}</div>
+    </div>
+""", unsafe_allow_html=True)
+
+# Información del recibo general abajo
+st.markdown(f"""
+    <div class="card-total">
+        <span style='color:#475569; font-size:14px;'><strong>Datos del Recibo General:</strong> Monto Total S/. {monto_recibo:.2f} | Consumo Total: {kwh_recibo:.0f} kWh | Período: del {datos['fecha_ini']} al {datos['fecha_fin']}</span>
+    </div>
+""", unsafe_allow_html=True)
+
