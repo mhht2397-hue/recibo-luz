@@ -18,7 +18,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # URL pública de tu hoja de cálculo (Asegúrate de pegar aquí tu enlace copiado)
-URL_EXCEL = "AGREGAR_AQUÍ_TU_ENLACE_DE_SHARE"
+URL_EXCEL = "https://docs.google.com/spreadsheets/d/1yJeU6zTkOqc0kwR8rV8Q0wjl7NomX3R_RqcW4zKoYPg/edit?gid=0#gid=0"
 
 st.title("⚡ LuzNet - Control de Luz")
 
