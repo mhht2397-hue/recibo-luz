@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # Configuración visual de la página
-st.set_page_config(page_title="LuzNet - Control de Energía", page_icon="⚡", layout="centered")
+st.set_page_config(page_title="Control de Energía", page_icon="⚡", layout="centered")
 
 # Estilos visuales optimizados para dispositivos móviles y tarjetas de colores
 st.markdown("""
@@ -36,7 +36,7 @@ if "registro_historico" not in st.session_state:
         }
     }
 
-st.title("⚡ LuzNet - Control de Luz")
+st.title("⚡ Control de Luz")
 
 # ==========================================
 # 🔑 LOGIN DE USUARIOS
@@ -47,7 +47,7 @@ usuario = st.sidebar.selectbox("¿Quién ingresa?", ["Página Principal (Resumen
 # Pines o claves sencillas de acceso
 if usuario == "Administrador":
     pin = st.sidebar.text_input("Ingresa tu PIN de Admin:", type="password")
-    if pin != "1234":
+    if pin != "marc0":
         st.warning("🔒 Por favor, ingresa el PIN correcto en la barra lateral para ver tus opciones.")
         st.stop()
 elif usuario == "Inquilino: Nora":
