@@ -19,10 +19,12 @@ st.markdown("""
 
 # URL DE TU GOOGLE SHEETS (Reemplaza los números por los tuyos)
 # Asegúrate de mantener el "/export?format=csv" al final para que cargue volando
-INICIO = "https://google.com"
-ID_HOJA = "1yJeU6zTkOqcOkwrR8rV8Q0wj17NomX3R_RqcW4zKoYPg"
-FINAL = "/export?format=csv"
-URL_EXCEL = INICIO + ID_HOJA + FINAL
+# Pega tu enlace COMPLETO de Google Sheets aquí adentro de las comillas:
+LINK_COMPLETO = "https://docs.google.com/spreadsheets/d/1yJeU6zTkOqc0kwR8rV8Q0wjl7NomX3R_RqcW4zKoYPg/edit?gid=0#gid=0"
+
+# El código se encarga de limpiarlo automáticamente para el servidor
+URL_EXCEL = "https://docs.google.com/spreadsheets/d/1yJeU6zTkOqc0kwR8rV8Q0wjl7NomX3R_RqcW4zKoYPg/edit?gid=0#gid=0.split("/edit")[0] + "/export?format=csv"
+
 
 st.title("⚡ LuzNet - Control de Luz")
 
