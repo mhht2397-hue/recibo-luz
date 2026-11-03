@@ -22,10 +22,6 @@ st.markdown("""
 # Pega tu enlace COMPLETO de Google Sheets aquí adentro de las comillas:
 LINK_COMPLETO = "https://docs.google.com/spreadsheets/d/1yJeU6zTkOqc0kwR8rV8Q0wjl7NomX3R_RqcW4zKoYPg/edit?gid=0#gid=0"
 
-# El código se encarga de limpiarlo automáticamente para el servidor
-URL_EXCEL = "https://docs.google.com/spreadsheets/d/1yJeU6zTkOqc0kwR8rV8Q0wjl7NomX3R_RqcW4zKoYPg/edit?gid=0#gid=0.split("/edit")[0] + "/export?format=csv"
-
-
 st.title("⚡ LuzNet - Control de Luz")
 
 # Lector ultra-rápido de Google Sheets sin librerías pesadas
