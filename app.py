@@ -39,7 +39,7 @@ def cargar_datos(url):
             "jesus_kwh": 58.44, "nora_pago": 46.64, "jesus_pago": 47.36
         }]).set_index("mes")
 
-df_historico = cargar_datos(URL_EXCEL)
+df_historico = cargar_datos("https://docs.google.com/spreadsheets/d/1yJeU6zTkOqc0kwR8rV8Q0wjl7NomX3R_RqcW4zKoYPg/edit?gid=0#gid=0")
 lista_meses = list(df_historico.index)
 mes_reciente = lista_meses[0] if len(lista_meses) > 0 else ""
 
